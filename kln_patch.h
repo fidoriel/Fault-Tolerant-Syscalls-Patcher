@@ -1,5 +1,5 @@
-#ifndef PATCH_H
-#define PATCH_H
+#ifndef KLN_PATCH_H
+#define KLN_PATCH_H
 
 // https://github.com/xcellerator/linux_kernel_hacking/issues/3
 

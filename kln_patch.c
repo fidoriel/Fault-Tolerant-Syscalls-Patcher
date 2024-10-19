@@ -2,8 +2,9 @@
 #include <linux/module.h>
 #include <linux/kprobes.h>
 
-// added by me
-#include "patch.h"
+#include "kln_patch.h"
+
+// https://github.com/xcellerator/linux_kernel_hacking/issues/3
 
 #define KPROBE_PRE_HANDLER(fname) static int __kprobes fname(struct kprobe *p, struct pt_regs *regs)
 typedef unsigned long (*kln_p)(const char*);
