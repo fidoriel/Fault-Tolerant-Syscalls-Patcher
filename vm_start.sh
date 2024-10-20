@@ -1,5 +1,5 @@
 qemu-system-x86_64 \
-    -hda syscall_testarea.qcow2 \
+    -hda syscall_testarea_10.qcow2 \
     -m 2048 \
     -virtfs local,id=myfs,path=$(pwd),security_model=passthrough,mount_tag=code \
     -nographic \
@@ -17,3 +17,5 @@ qemu-system-x86_64 \
 # module
 # insmod overwrite.ko
 # rmmod overwrite
+
+# clang-format -i **/*.c **/*.h
