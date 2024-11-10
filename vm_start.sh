@@ -1,6 +1,6 @@
 qemu-system-x86_64 \
     -hda syscall_testarea_10.qcow2 \
-    -m 256 \
+    -m 512 \
     -virtfs local,id=myfs,path=$(pwd),security_model=passthrough,mount_tag=code \
     -nographic \
     -netdev user,id=net0 \

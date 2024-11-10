@@ -55,3 +55,4 @@ dkms.conf
 *.qcow2
 *.deb
 .DS_Store
+.tmp_*

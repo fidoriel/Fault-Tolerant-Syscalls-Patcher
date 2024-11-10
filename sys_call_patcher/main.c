@@ -4,17 +4,18 @@
 #include <linux/mman.h>
 #include <linux/module.h>
 #include <linux/syscalls.h>
+#include <linux/delay.h>
 
 #include "cr0_patch.h"
 #include "kln_patch.h"
 #include <asm/unistd_64.h>
 #include <linux/kernel.h>
 
-#define SYSCALL_TO_OVERWRITE __NR_chdir
+#define SYSCALL_TO_OVERWRITE __NR_mmap
 unsigned long *sys_call_table_ref = NULL;
 char *sym_name = "sys_call_table";
 
-asmlinkage long (*original_call)(const char __user *path);
+asmlinkage long (*original_call)(struct pt_regs *params);
 
 int num_used = 0;
 
@@ -22,10 +23,33 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("fidoriel");
 MODULE_DESCRIPTION("A kernel module to overwrite a syscall in sys_call_table");
 
-static asmlinkage long syscall_wrapper(const char __user *path) {
-  printk("[sys_call_patcher] Syscall intercepted!");
-  num_used++;
-  return original_call(path);
+int retry_intervals[] = {10, 100, 1000};
+
+asmlinkage long syscall_wrapper(struct pt_regs *params) {
+  long einval = original_call(params);
+
+  if (einval != 0) {
+    pr_info("[sys_call_patcher] SysCall Failed. Going to Retry\n");
+    size_t i = 0; 
+    for (i < 3; i++;)
+    {
+      msleep(retry_intervals[i]);
+      einval = original_call(params);
+      if (einval != 0) {
+        pr_info("[sys_call_patcher] %d Retry Failed.\n", i+1);
+      }
+      else {
+        pr_info("[sys_call_patcher] %d Retry Successful.\n", i+1);
+        break;
+      }
+    }
+  }
+  
+  // else {
+  //     pr_info("[sys_call_patcher] Used %ld\n", einval);
+  // }
+  
+  return einval;
 }
 
 static int __init hello_init(void) {
