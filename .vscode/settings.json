@@ -28,6 +28,8 @@
         "tuple": "c",
         "cstdlib": "c",
         "unistd.h": "c",
-        "mman.h": "c"
+        "mman.h": "c",
+        "kernel.h": "c",
+        "kln_patch.h": "c"
     }
 }

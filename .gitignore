@@ -56,3 +56,4 @@ dkms.conf
 *.deb
 .DS_Store
 .tmp_*
+race_app

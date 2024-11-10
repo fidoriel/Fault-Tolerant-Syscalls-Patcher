@@ -7,15 +7,13 @@
 #include <stdbool.h>
 #include <sys/time.h>
 
-const int num_bytes = 256 * 1024 * 1024;
+const int num_bytes = 100 * 1024 * 1024;
 
 bool time_is_even() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
 
-    long milliseconds = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-
-    return (milliseconds % 2) == 0;
+    return ((tv.tv_usec / 500000) % 2) == 0;
 }
 
 void busy_wait_for_even() {
@@ -35,18 +33,21 @@ void* malloc_thread(void* vargp)
     printf("Thread Started\n");
 
     int *ptr = NULL;
+    int i = 0;
     while (1) {
-        busy_wait_for_even();
-        free(ptr);
+        busy_wait_for_odd();
         ptr = malloc(num_bytes);
-        memset(ptr, 0, num_bytes);
-        printf("%p\n", ptr);
         if (ptr == NULL)
         {
-            printf("Malloc Failed\n");
+            printf("Malloc on odd Failed\n");
             exit(1);
         }
-        busy_wait_for_odd();
+        printf("Odd Round %d\n", i);
+        i++;
+        memset(ptr, 0, num_bytes);
+        // printf("%p\n", ptr);
+        busy_wait_for_even();
+        free(ptr);
     }
     return NULL;
 }
@@ -57,18 +58,21 @@ int main()
     pthread_create(&thread_id, NULL, malloc_thread, NULL);
 
     int *ptr = NULL;
+    int i = 0;
     while (1) {
         busy_wait_for_even();
-        free(ptr);
         ptr = malloc(num_bytes);
-        memset(ptr, 0, num_bytes);
-        printf("%p\n", ptr);
         if (ptr == NULL)
         {
-            printf("Malloc Failed\n");
+            printf("Malloc on even Failed\n");
             exit(1);
         }
+        printf("Even Round %d\n", i);
+        i++;
+        memset(ptr, 0, num_bytes);
+        // printf("%p\n", ptr);
         busy_wait_for_odd();
+        free(ptr);
     }
 
     exit(0);

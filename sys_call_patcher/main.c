@@ -28,21 +28,32 @@ int retry_intervals[] = {10, 100, 1000};
 asmlinkage long syscall_wrapper(struct pt_regs *params) {
   long einval = original_call(params);
 
-  if (einval != 0) {
-    pr_info("[sys_call_patcher] SysCall Failed. Going to Retry\n");
-    size_t i = 0; 
-    for (i < 3; i++;)
-    {
-      msleep(retry_intervals[i]);
-      einval = original_call(params);
-      if (einval != 0) {
-        pr_info("[sys_call_patcher] %d Retry Failed.\n", i+1);
-      }
-      else {
-        pr_info("[sys_call_patcher] %d Retry Successful.\n", i+1);
-        break;
-      }
+  if (einval < 0) {
+    pr_info("[sys_call_patcher] SysCall Failed. Going to Retry.\n");
+  
+    msleep(500);
+    einval = original_call(params);
+    if (einval < 0) {
+      pr_info("[sys_call_patcher] Retry Failed.\n");
     }
+    else {
+      pr_info("[sys_call_patcher] Retry Success.\n");
+    }
+
+    // size_t i = 0; 
+    // for (i < 3; i++;)
+    // {
+    //   pr_info("[sys_call_patcher] %d Retry\n", i+1);
+    //   // msleep(retry_intervals[i]);
+    //   einval = original_call(params);
+    //   if (einval < 0) {
+    //     pr_info("[sys_call_patcher] %d Retry Failed.\n", i+1);
+    //   }
+    //   else {
+    //     pr_info("[sys_call_patcher] %d Retry Successful.\n", i+1);
+    //     break;
+    //   }
+    // }
   }
   
   // else {
