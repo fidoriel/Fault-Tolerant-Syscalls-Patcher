@@ -13,7 +13,7 @@ bool time_is_even() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
 
-    return ((tv.tv_usec / 500000) % 2) == 0;
+    return ((tv.tv_usec / 100000) % 2) == 0;
 }
 
 void busy_wait_for_even() {

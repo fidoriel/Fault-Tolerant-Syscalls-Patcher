@@ -31,7 +31,7 @@ asmlinkage long syscall_wrapper(struct pt_regs *params) {
   if (einval < 0) {
     pr_info("[sys_call_patcher] SysCall Failed. Going to Retry.\n");
   
-    msleep(500);
+    msleep(250);
     einval = original_call(params);
     if (einval < 0) {
       pr_info("[sys_call_patcher] Retry Failed.\n");
