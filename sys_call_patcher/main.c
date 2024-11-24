@@ -23,44 +23,29 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("fidoriel");
 MODULE_DESCRIPTION("A kernel module to overwrite a syscall in sys_call_table");
 
-int retry_intervals[] = {10, 100, 1000};
+int retry_intervals[] = {10, 100, 250, 500, 1000};
+#define NUM_RETRIES (sizeof(retry_intervals) / sizeof(retry_intervals[0]))
 
 asmlinkage long syscall_wrapper(struct pt_regs *params) {
-  long einval = original_call(params);
+    long einval = original_call(params);
+    int retry;
 
-  if (einval < 0) {
-    pr_info("[sys_call_patcher] SysCall Failed. Going to Retry.\n");
-  
-    msleep(250);
-    einval = original_call(params);
     if (einval < 0) {
-      pr_info("[sys_call_patcher] Retry Failed.\n");
+        pr_info("[sys_call_patcher] SysCall Failed. Starting retries.\n");
+        
+        for (retry = 0; retry < NUM_RETRIES; retry++) {
+            msleep(retry_intervals[retry]);
+            einval = original_call(params);
+            
+            if (einval < 0) {
+                pr_info("[sys_call_patcher] Retry %d failed.\n", retry + 1);
+            } else {
+                pr_info("[sys_call_patcher] Retry %d succeeded.\n", retry + 1);
+                break;
+            }
+        }
     }
-    else {
-      pr_info("[sys_call_patcher] Retry Success.\n");
-    }
-
-    // size_t i = 0; 
-    // for (i < 3; i++;)
-    // {
-    //   pr_info("[sys_call_patcher] %d Retry\n", i+1);
-    //   // msleep(retry_intervals[i]);
-    //   einval = original_call(params);
-    //   if (einval < 0) {
-    //     pr_info("[sys_call_patcher] %d Retry Failed.\n", i+1);
-    //   }
-    //   else {
-    //     pr_info("[sys_call_patcher] %d Retry Successful.\n", i+1);
-    //     break;
-    //   }
-    // }
-  }
-  
-  // else {
-  //     pr_info("[sys_call_patcher] Used %ld\n", einval);
-  // }
-  
-  return einval;
+    return einval;
 }
 
 static int __init hello_init(void) {
