@@ -22,10 +22,9 @@ MODULE_DESCRIPTION("A kernel module to overwrite a syscall in sys_call_table");
 
 syscall_fn_t wrapped_calls[NUM_SYS_CALLS] = {NULL};
 
-syscall_fn_t original_calls[NUM_SYS_CALLS] = {
-    NULL}; // store original syscall pointer, number of syscalls
+syscall_fn_t original_calls[NUM_SYS_CALLS] = {NULL};
 
-int retry_intervals[] = {10, 100, 250, 500, 1000};
+int retry_intervals[] = {10, 100, 250};
 #define NUM_RETRIES (sizeof(retry_intervals) / sizeof(retry_intervals[0]))
 
 asmlinkage long syscall_wrapper(int sys_call_number, struct pt_regs *params) {
@@ -68,13 +67,15 @@ static int __init hello_init(void) {
 
   // pr_info("[sys_call_patcher] Valid sys_call_table address = 0x%lx\n",
           // sys_call_table_ref); // must match cat /proc/kallsyms | grep
-                               // sys_call_table
+                               // sys_call_table+
+
+  unprotect_memory();
   for (size_t i = 0; i < NUM_SYS_CALLS; i++) {
     if (wrapped_calls[i] == NULL) {
       pr_info("[sys_call_patcher] Skipping %d\n", i);
       continue;
     }
-    pr_info("[sys_call_patcher] Wrapping %d\n", i);
+    // pr_info("[sys_call_patcher] Wrapping %d\n", i);
 
     original_calls[i] = (syscall_fn_t)sys_call_table_ref[i];
     if (!original_calls[i]) {
@@ -82,40 +83,39 @@ static int __init hello_init(void) {
       return -EINVAL;
     }
 
-    pr_info("[sys_call_patcher] Original Call address = 0x%lx\n",
-            original_calls[i]); // must match cat /proc/kallsyms | grep
+    // pr_info("[sys_call_patcher] Original Call address = 0x%lx\n",
+    //         original_calls[i]); // must match cat /proc/kallsyms | grep
                                 // __x64_sys_open
-    pr_info("[sys_call_patcher] Wrapper Call address = 0x%lx\n",
-            wrapped_calls[i]);
-    unprotect_memory();
+    // pr_info("[sys_call_patcher] Wrapper Call address = 0x%lx\n",
+    //         wrapped_calls[i]);
     sys_call_table_ref[i] = (unsigned long)wrapped_calls[i];
-    protect_memory();
 
     // pr_info("[sys_call_patcher] New call adress = 0x%lx\n",
             // sys_call_table_ref[i]);
   }
+  protect_memory();
 
   return 0; // Success
 }
 
 static void __exit hello_exit(void) {
   pr_info("[sys_call_patcher] Exiting module\n");
+  unprotect_memory();
   for (size_t i = 0; i < NUM_SYS_CALLS; i++) {
-    pr_info("[sys_call_patcher] Unwrapping %d\n", i);
-    if (sys_call_table_ref[i] == NULL) {
-      pr_info("[sys_call_patcher] sys_call_table_ref[%d] is NULL, skipping\n", i);
+    // pr_info("[sys_call_patcher] Unwrapping %d\n", i);
+    if (wrapped_calls[i] == NULL) {
+      pr_info("[sys_call_patcher] wrapped_calls[%d] is NULL, skipping\n", i);
       continue;
     }
-    pr_info("[sys_call_patcher] Reverting 0x%lx\n", sys_call_table_ref[i]);
+    // pr_info("[sys_call_patcher] Reverting 0x%lx\n", sys_call_table_ref[i]);
 
-    unprotect_memory();
     sys_call_table_ref[i] = (unsigned long)original_calls[i];
-    protect_memory();
 
-    pr_info("[sys_call_patcher] to 0x%lx\n", original_calls[i]);
+    // pr_info("[sys_call_patcher] to 0x%lx\n", original_calls[i]);
   }
-  pr_info("[sys_call_patcher] Finished unwrapping all sys calls\n");
-  // pr_info("[sys_call_patcher] sys call table changes reverted\n");
+  protect_memory();
+  // pr_info("[sys_call_patcher] Finished unwrapping all sys calls\n");
+  pr_info("[sys_call_patcher] sys call table changes reverted\n");
 }
 
 module_init(hello_init);

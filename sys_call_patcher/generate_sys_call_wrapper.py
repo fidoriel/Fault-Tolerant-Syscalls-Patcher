@@ -13,12 +13,14 @@ FILE_CONTENT = """
 
 #include "sys_call_wrapper.h"
 """
-NUM_SYSCALLS = 322
+NUM_SYSCALLS = 24
 SYSCALL_RANGES = (
-    list(range(0, 322))
+    list(range(0, NUM_SYSCALLS))
     # + list(range(424, 462 + 1))
     # + list(range(512, NUM_SYSCALLS + 1))
 )
+
+IGNORE_CALLS = {64}
 
 
 for i in SYSCALL_RANGES:
@@ -34,8 +36,8 @@ asmlinkage long wrapper_{i}(struct pt_regs *params)
 # Update function generation to use pointer
 FILE_CONTENT += "\nvoid fill_wrapped_table(syscall_fn_t *wrapped_calls_ary)\n{\n"
 
-for i in range(NUM_SYSCALLS + 1):
-    if i in SYSCALL_RANGES:
+for i in range(NUM_SYSCALLS):
+    if i in SYSCALL_RANGES: # and i not in IGNORE_CALLS:
         FILE_CONTENT += f"    wrapped_calls_ary[{i}] = &wrapper_{i};\n"  # Array syntax still works with pointers
     else:
         FILE_CONTENT += f"    wrapped_calls_ary[{i}] = NULL;\n"

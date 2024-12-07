@@ -37,6 +37,7 @@
         "algorithm": "c",
         "hash_set": "c",
         "sys_call_wrapper.h": "c",
-        "unistd_64.h": "c"
+        "unistd_64.h": "c",
+        "types.h": "c"
     }
 }

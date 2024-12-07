@@ -6,7 +6,7 @@
 
 typedef asmlinkage long (*syscall_fn_t)(struct pt_regs *params);
 
-#define NUM_SYS_CALLS 322 // 545
+#define NUM_SYS_CALLS 24 // 545
 
 asmlinkage long syscall_wrapper(int sys_call_number, struct pt_regs *params);
 
