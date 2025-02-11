@@ -29,6 +29,7 @@ int retry_intervals[] = {10, 100, 250};
 asmlinkage long syscall_wrapper(struct pt_regs *params) {
   long einval = original_call(params);
   int retry;
+  num_used++;
 
   if (einval < 0) {
     // pr_info("[sys_call_patcher] SysCall Failed. Starting retries.\n");

@@ -23,7 +23,7 @@ int main() {
         total_time += ((double) (end - start)) / CLOCKS_PER_SEC;
     }
 
-    printf("Average allocation time: %.9f seconds\n", total_time / NUM_ALLOCS);
+    printf("%.9f\n", total_time / NUM_ALLOCS);
 
     return 0;
 }
