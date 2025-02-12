@@ -1,29 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <x86intrin.h> // for __rdtsc()
 
 #define NUM_ALLOCS 8092
-#define ALLOC_SIZE (1024 * 1024 * 128) // 1 MB
+#define ALLOC_SIZE (1024 * 1024 * 128) // 128 MB
 
 int main() {
-    clock_t start, end;
-    double total_time;
+    unsigned long long start, end, total_cycles;
     
     for (size_t i = 0; i < NUM_ALLOCS; i++)
     {
-        start = clock();
+        start = __rdtsc();
 
         void *mem = malloc(ALLOC_SIZE);
         if (mem == NULL) {
             fprintf(stderr, "Memory allocation failed\n");
             return 1;
         }
-        end = clock();
+        end = __rdtsc();
         free(mem);
-        total_time += ((double) (end - start)) / CLOCKS_PER_SEC;
+        
+        total_cycles += (end - start);
     }
 
-    printf("%.9f\n", total_time / NUM_ALLOCS);
+    printf("%llu\n", total_cycles / NUM_ALLOCS);
 
     return 0;
 }
